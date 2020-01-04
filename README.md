@@ -12,4 +12,5 @@ output.
 tee command can be used to support double redirection to standard input and a file and input at the same time (i.e., piping while keeping the output on the terminal)
 
 This shell supports one pipe operation using "|".
+
 All commands (i.e., ls, generate, sum, subtract) are written in Java! However, the shell interpreter is written in C.
