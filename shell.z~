@@ -1,0 +1,188 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main() {
+
+	while(1) {
+		printf("basic272-shell> ");
+                char command[20];
+		char ctee[3];
+		char argument[20];
+                scanf("%[^\n]%*c", command);
+		pid_t childpid, childpid2;
+		int status, size, x;
+		char output[100];
+		ctee[0] = command[0];
+                ctee[1] = command[1];
+                ctee[2] = command[2];
+		printf("%s\n", ctee);
+
+//ls
+		if(strcmp(command, "ls") == 0){ 
+			childpid = fork();
+			if(childpid == 0) {
+				execl("/usr/bin/java","/usr/bin/java", "-jar", "ls/ls.jar", NULL);
+			}
+			else if(childpid > 0) {
+				wait(&status);
+			}
+		}
+		
+//generate
+		else if(strcmp(command, "generate") == 0) {
+			childpid = fork();
+			if(childpid == 0) {
+				execl("/usr/bin/java", "/usr/bin/java", "-jar", "generate/generate.jar", NULL);
+			}
+			else if(childpid > 0) {
+				wait(&status);
+			}
+		}
+		
+//sum
+		else if(strcmp(command,"sum") == 0) {
+			childpid = fork();
+                        if(childpid == 0) {
+                                execl("/usr/bin/java", "/usr/bin/java", "-jar", "sum/sum.jar", NULL);
+                        }
+                        else if(childpid > 0) {
+                                wait(&status);
+                        }
+		}
+		
+//substract
+		else if(strcmp(command,"substract") == 0) {
+                        childpid = fork();
+                        if(childpid == 0) {
+                                execl("/usr/bin/java", "/usr/bin/java", "-jar", "substract/substract.jar", NULL);
+                        }
+                        else if(childpid > 0) {
+                                wait(&status);
+                        }
+                }
+		
+	
+//generate | sum
+                else if(strcmp(command, "generate | sum") == 0) {
+                        int fd[2];
+                        pipe(fd);
+                        childpid = fork();
+                        if(childpid == 0) {
+                                close(fd[0]);
+                                close(1);
+                                dup2(fd[1], 1);
+                                close(fd[1]);
+                                execl("/usr/bin/java", "/usr/bin/java", "-jar", "generate/generate.jar", NULL);
+                        }
+                        else {					
+				close(fd[1]);
+                                childpid2 = fork();
+                                if(childpid2 == 0){
+                                        close(0);
+                                        dup2(fd[0], 0);
+				
+			//		size = read(fd[0], output, 10);
+                        //        	printf("%s x= %d\n", output, size);
+			//		size = read(fd[0], output, 10);
+                        //	 	printf("%s x= %d\n",output, size);
+                                        
+					close(fd[0]);
+                                        execl("/usr/bin/java", "/usr/bin/java", "-jar", "sum/sum.jar", NULL);
+                                }
+                                else {
+                                        close(fd[0]);
+                                        waitpid(childpid, NULL, 0);
+                                        waitpid(childpid2, NULL, 0);
+				}
+                        }
+             	}
+//generate | substract
+		else if(strcmp(command, "generate | substract") == 0) {
+                        int fd[2];
+                        pipe(fd);
+                        childpid = fork();
+                        if(childpid == 0) {
+                                close(fd[0]);
+                                close(1);
+                                dup2(fd[1], 1);
+                                close(fd[1]);
+                                execl("/usr/bin/java", "/usr/bin/java", "-jar", "generate/generate.jar", NULL);
+                        }
+                        else {
+	//			size = read(fd[0], output, 1000);
+	//			printf("%s\n", output);
+				close(fd[1]);
+                                childpid2 = fork();
+                                if(childpid2 == 0){	
+                                        close(0);	
+                                       	dup2(fd[0], 0);
+					close(fd[0]);
+					execl("/usr/bin/java", "/usr/bin/java", "-jar", "substract/substract.jar", NULL);
+                                }
+                                else {
+                                        close(fd[0]);
+                                        waitpid(childpid, NULL, 0);
+                                        waitpid(childpid2, NULL, 0);
+                                }
+                        }
+		}	
+
+//tee
+		else if(strcmp(ctee, "tee") == 0){
+                        printf("where is %s\n", command);
+			strtok(command, " ");
+                        printf("where is %s\n", command);
+			childpid = fork();
+        	        if(childpid == 0) {
+			execl("/usr/bin/java","/usr/bin/java", "-jar", "tee/tee.jar", command, NULL);
+        	        }
+        	        else if(childpid > 0) {
+        	               wait(&status);
+        	        }
+	
+
+		}
+//ls | tee
+                else if(strcmp(command, "ls | tee") == 0) {
+//			strtok(command, " ");
+//			printf("where is %s\n", command);
+			int fd[2];
+                        pipe(fd);
+                        childpid = fork();
+                        if(childpid == 0) {
+                                close(fd[0]);
+                                close(1);
+                                dup2(fd[1], 1);
+                                close(fd[1]);
+                                execl("/usr/bin/java", "/usr/bin/java", "-jar", "generate/generate.jar", command, NULL);
+                        }
+                        else {
+        //                      size = read(fd[0], output, 1000);
+        //                      printf("%s\n", output);
+                                close(fd[1]);
+                                childpid2 = fork();
+                                if(childpid2 == 0){
+                                        close(0);
+                                        dup2(fd[0], 0);
+                                        close(fd[0]);
+                                        execl("/usr/bin/java", "/usr/bin/java", "-jar", "substract/substract.jar", NULL);
+                                }
+                                else {
+                                        close(fd[0]);
+                                        waitpid(childpid, NULL, 0);
+                                        waitpid(childpid2, NULL, 0);
+                                }
+                        }
+                }
+
+	
+		else printf("Command not found\n");
+		printf("\n");
+	}
+}
+
