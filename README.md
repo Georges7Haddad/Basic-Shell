@@ -1,5 +1,5 @@
 # Basic-Shell
-A basic non-built in shell (i.e., the shell does not contain the code of the commands to be executed). The shell accepts user commands and then executes each command in a separate process.
+A basic non-built in shell (i.e., the shell does not contain the code of the commands to be executed) implemented on Linux. The shell accepts user commands and then executes each command in a separate process.
 This shell interface has the parent process first read what the user enters on the command line, and then create a separate child process that performs the command. Then, the parent process waits for the child to exit before continuing.
 
 This shell supports only the following commands (with no attributes): ls, generate, sum, substract, tee. 
